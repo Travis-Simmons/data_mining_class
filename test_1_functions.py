@@ -110,10 +110,20 @@ class data_test:
             return total_cost
 
     # This one does ne for thesa values
-    def get_ne(X, Y):
-        theta_NE = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(Y)
+    def get_ne(X, Y, lamb = 100, regularization = False):
+        if regularization == False:
+            theta_NE = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(Y)
 
-        print("NE gives", theta_NE)
+            print("Non-regularized NE gives", theta_NE)
+
+        if regularization == True:
+            reg = lamb*np.identity(4)
+            reg[0][0]=0
+
+            theta_NE = np.linalg.inv(X.T.dot(X) + reg).dot(X.T).dot(Y)
+
+            print("Regularized NE gives", theta_NE)
+
 
     # this one does gd for theta values
 
@@ -162,11 +172,15 @@ class data_test:
 
                     cnt = 0
 
-                    # working on only penalizing certain thetas
-                    # if f'theta{cnt}'
                     for i in theta_dict:
-                        update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}']*(1-lamb*learning_rate/len(X)) - learning_rate/len(X)*((X.dot(list(theta_dict.values()))-Y).dot(X[:,cnt]))
-                        cnt += 1
+
+                        if cnt == 0:
+                            update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}'] - learning_rate/len(X)*((X.dot(list(theta_dict.values()))-Y).dot(X[:,cnt]))
+                            cnt += 1
+                        
+                        else:
+                            update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}']*(1-lamb*learning_rate/len(X)) - learning_rate/len(X)*((X.dot(list(theta_dict.values()))-Y).dot(X[:,cnt]))
+                            cnt += 1
 
                     
                     theta_dict = update_dict.copy()
@@ -174,7 +188,7 @@ class data_test:
 
                     
 
-                print("Non regularized linear GD gives", theta_dict)
+                print("Regularized linear GD gives", theta_dict)
 
         
         if type == 'log':
@@ -186,16 +200,38 @@ class data_test:
                 update_dict[f'theta{cnt}'] = 0
                 cnt += 1
 
+            if regularization == False:
 
-            for i in range(itterations):
-            
-                cnt = 0
-                for i in theta_dict:
-                    theta_dict[f'theta{cnt}'] = update_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
+                for i in range(itterations):
+                
+                    cnt = 0
+                    for i in theta_dict:
+                        theta_dict[f'theta{cnt}'] = update_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
 
-                    cnt += 1
+                        cnt += 1
 
-                theta_dict = update_dict.copy()
+                    theta_dict = update_dict.copy()
+
+            if regularization == True:
+
+
+                for i in range(itterations):
+                
+                    cnt = 0
+                    for i in theta_dict:
+                        if cnt == 0:    
+
+                            theta_dict[f'theta{cnt}'] = update_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
+
+                            cnt += 1
+
+                        # add in regularized log gd
+                        else:
+                            print('do regularized log gd')
+
+
+                    theta_dict = update_dict.copy()
+
 
 
             print("Logistic GD gives", theta_dict)
