@@ -117,7 +117,7 @@ class data_test:
             print("Non-regularized NE gives", theta_NE)
 
         if regularization == True:
-            reg = lamb*np.identity(4)
+            reg = lamb*np.identity(len(X[0]))
             reg[0][0]=0
 
             theta_NE = np.linalg.inv(X.T.dot(X) + reg).dot(X.T).dot(Y)
@@ -206,11 +206,14 @@ class data_test:
                 
                     cnt = 0
                     for i in theta_dict:
-                        theta_dict[f'theta{cnt}'] = update_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
+                        update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
 
                         cnt += 1
 
                     theta_dict = update_dict.copy()
+
+                print("Non-Regularized Logistic GD gives", theta_dict)
+
 
             if regularization == True:
 
@@ -221,12 +224,14 @@ class data_test:
                     for i in theta_dict:
                         if cnt == 0:    
 
-                            theta_dict[f'theta{cnt}'] = update_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
+                            update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}'] - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
 
                             cnt += 1
 
                         # add in regularized log gd
                         else:
+                            update_dict[f'theta{cnt}'] = theta_dict[f'theta{cnt}']*(1-lamb*learning_rate/len(X)) - learning_rate/len(X)*((data_test.sig(X.dot(list(theta_dict.values())))-Y).dot(X[:,cnt]))
+                            cnt += 1
                             print('do regularized log gd')
 
 
@@ -234,6 +239,6 @@ class data_test:
 
 
 
-            print("Logistic GD gives", theta_dict)
+                    print("Regularized Logistic GD gives", theta_dict)
 
         return list(theta_dict.values())
